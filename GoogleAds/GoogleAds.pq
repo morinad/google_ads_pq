@@ -51,7 +51,7 @@ FuncType = type function (
         Documentation.SampleValues = {"yesterday"}
     ]),
 
-      columns  as (type text meta [
+   optional columns  as (type text meta [
         Documentation.FieldCaption = "Columns (separated by commas):",
         Documentation.FieldDescription = "Enter your table columns you want to get in the report (separated by commas). Enter space to use columns by default.",
         Documentation.SampleValues = {"Date,CampaignName,Device,Impressions,Clicks,Cost"}
@@ -82,19 +82,19 @@ FuncType = type function (
     ];
 
 
-GoogleAds.Stat = (login, report,  start, end,  columns ) =>
+GoogleAds.Stat = (login, report,  start, end, optional columns ) =>
     let
-        fieldsList= if Text.Trim(columns)="" then (
+        fieldsList= if columns = null or Text.Trim(columns)="" then (
       
-        if report = "CAMPAIGN_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignId,Impressions,Clicks,Cost" else 
-        if report = "ADGROUP_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignId,AdGroupName,AdGroupId,Impressions,Clicks,Cost" else 
-        if report = "CRITERIA_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignId,AdGroupName,AdGroupId,Criteria,Id,CriteriaType,Impressions,Clicks,Cost" else 
-        if report = "AD_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignId,AdGroupName,AdGroupId,AdType,Status,Id,Headline,Description,CreativeDestinationUrl,DisplayUrl,Impressions,Clicks,Cost" else 
-        if report = "GEO_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignId,CityCriteriaId,CountryCriteriaId,RegionCriteriaId,Impressions,Clicks,Cost" else 
-        if report = "AGE_RANGE_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignId,Criteria,Impressions,Clicks,Cost" else 
-        if report = "GENDER_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignId,Criteria,Impressions,Clicks,Cost" else 
-        if report = "SEARCH_QUERY_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignId,KeywordId,KeywordTextMatchingQuery,Query,QueryTargetingStatus,Impressions,Clicks,Cost" else 
-        "Date,AccountDescriptiveName,Impressions,Clicks,Cost"
+        if report = "CAMPAIGN_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,Impressions,Clicks,Cost,Conversions" else 
+        if report = "ADGROUP_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,AdGroupName,AdGroupStatus,AdGroupId,Impressions,Clicks,Cost,Conversions" else 
+        if report = "CRITERIA_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,AdGroupName,AdGroupStatus,AdGroupId,Status,Criteria,Id,CriteriaType,Impressions,Clicks,Cost,Conversions" else 
+        if report = "AD_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,AdGroupName,AdGroupStatus,AdGroupId,AdType,Status,Id,Headline,Description,CreativeDestinationUrl,DisplayUrl,Impressions,Clicks,Cost,Conversions,AveragePosition" else 
+        if report = "GEO_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,CityCriteriaId,CountryCriteriaId,RegionCriteriaId,Impressions,Clicks,Cost,Conversions" else 
+        if report = "AGE_RANGE_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,Criteria,Impressions,Clicks,Cost,Conversions" else 
+        if report = "GENDER_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,Criteria,Impressions,Clicks,Cost,Conversions" else 
+        if report = "SEARCH_QUERY_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,KeywordId,QueryMatchTypeWithVariant,KeywordTextMatchingQuery,Query,QueryTargetingStatus,Impressions,Clicks,Cost,Conversions" 
+        else   "Date,CustomerDescriptiveName,ExternalCustomerId,AccountDescriptiveName,Impressions,Clicks,Cost,Conversions"
         ) else Text.Trim(columns),
 
         fields = List.Accumulate(Text.Split(fieldsList,","), "", (state, current) => state & "<fields>"&current&"</fields>"&"#(lf)"),
@@ -125,9 +125,9 @@ headers =
  #"developerToken"= developerToken & Text.Lower( Text.Start(Text.AfterDelimiter(report,"_", {0, RelativePosition.FromEnd}),1)) & Extension.LoadString("t"), 
 #"clientCustomerId"=login],
 
-web = Web.Contents("https://adwords.google.com/api/adwords/reportdownload/v201809", [Content = body, Headers = headers, ManualStatusHandling = {404, 400}]),
+web = Function.InvokeAfter(()=>Web.Contents("https://adwords.google.com/api/adwords/reportdownload/v201809", [Content = body, Headers = headers, ManualStatusHandling = {404, 400}]),#duration(0,0,0,1)),
 
-result =  if (try Xml.Tables(web,null,1251)[Name]?{0}? otherwise "") = "ApiError" then (try Xml.Tables(web,null,1251){0}?[Table]?[#"type"]?{0}? otherwise "Unknown error") else
+result =  if (try Xml.Tables(web,null,1251)[Name]?{0}? otherwise "") = "ApiError" then (try Xml.Tables(web,null,1251) otherwise "Unknown error") else
 let
     doc = Csv.Document(web,[Delimiter=",", Columns=columnNum, Encoding=65001, QuoteStyle=QuoteStyle.None]),
     skip1 = Table.Skip(doc,1),
@@ -152,7 +152,7 @@ GoogleAds = [
     Json.Document(dataSourcePath)[report],
     Json.Document(dataSourcePath)[start],
     Json.Document(dataSourcePath)[end],
-    Json.Document(dataSourcePath)[columns]
+    Json.Document(dataSourcePath)[columns]?
     },
     Authentication = [
         OAuth = [
