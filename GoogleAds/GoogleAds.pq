@@ -35,6 +35,7 @@ FuncType = type function (
            "GEO_PERFORMANCE_REPORT",
            "AGE_RANGE_PERFORMANCE_REPORT",
            "GENDER_PERFORMANCE_REPORT",
+           "SHOPPING_PERFORMANCE_REPORT",
             "SEARCH_QUERY_PERFORMANCE_REPORT"
             }
     ]),
@@ -93,6 +94,7 @@ GoogleAds.Stat = (login, report,  start, end, optional columns ) =>
         if report = "GEO_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,CityCriteriaId,CountryCriteriaId,RegionCriteriaId,Impressions,Clicks,Cost,Conversions" else 
         if report = "AGE_RANGE_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,Criteria,Impressions,Clicks,Cost,Conversions" else 
         if report = "GENDER_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,Criteria,Impressions,Clicks,Cost,Conversions" else 
+        if report = "SHOPPING_PERFORMANCE_REPORT" then "Date,CategoryL1,CategoryL2,CategoryL3,CategoryL4,CategoryL5,ProductTypeL1,ProductTypeL2,ProductTypeL3,ProductTypeL4,ProductTypeL5,Brand,OfferId,ProductTitle,Impressions,Clicks,Cost,Conversions" else 
         if report = "SEARCH_QUERY_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,KeywordId,QueryMatchTypeWithVariant,KeywordTextMatchingQuery,Query,QueryTargetingStatus,Impressions,Clicks,Cost,Conversions" 
         else   "Date,CustomerDescriptiveName,ExternalCustomerId,AccountDescriptiveName,Impressions,Clicks,Cost,Conversions"
         ) else Text.Trim(columns),
@@ -176,7 +178,7 @@ StartLogin = (resourceUrl, state, display) =>
             client_id = client_id,
             state = state,
             redirect_uri = redirect_uri,
-            prompt="consent",
+            prompt="select_account",
             response_type = "code"])
     in
         [
