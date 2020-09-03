@@ -52,7 +52,7 @@ FuncType = type function (
         Documentation.SampleValues = {"yesterday"}
     ]),
 
-   optional columns  as (type text meta [
+    columns  as (type nullable text meta [
         Documentation.FieldCaption = "Columns (separated by commas):",
         Documentation.FieldDescription = "Enter your table columns you want to get in the report (separated by commas). Enter space to use columns by default.",
         Documentation.SampleValues = {"Date,CampaignName,Device,Impressions,Clicks,Cost"}
@@ -83,7 +83,7 @@ FuncType = type function (
     ];
 
 
-GoogleAds.Stat = (login, report,  start, end, optional columns ) =>
+GoogleAds.Stat = (login as text, report as text,  start as text, end as text,  columns as nullable text ) =>
     let
         fieldsList= if columns = null or Text.Trim(columns)="" then (
       
@@ -178,7 +178,7 @@ StartLogin = (resourceUrl, state, display) =>
             client_id = client_id,
             state = state,
             redirect_uri = redirect_uri,
-            prompt="select_account",
+            prompt="consent",
             response_type = "code"])
     in
         [
@@ -206,7 +206,7 @@ TokenMethod = (grantType,tokenField,code) =>
                 redirect_uri = redirect_uri],
         string2=Record.AddField(string1,tokenField,code),
         
-        Response = Web.Contents("https://www.googleapis.com/oauth2/v4/token", [
+        Response = Web.Contents("https://oauth2.googleapis.com/token", [
             Content = Text.ToBinary(Uri.BuildQueryString(string2)),
             Headers=[#"Content-type" = "application/x-www-form-urlencoded", #"Accept" = "application/json"]]),
         Parts = Json.Document(Response)
