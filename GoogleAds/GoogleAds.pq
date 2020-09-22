@@ -127,7 +127,7 @@ headers =
  #"developerToken"= developerToken & Text.Lower( Text.Start(Text.AfterDelimiter(report,"_", {0, RelativePosition.FromEnd}),1)) & Extension.LoadString("t"), 
 #"clientCustomerId"=login],
 
-web = Function.InvokeAfter(()=>Web.Contents("https://adwords.google.com/api/adwords/reportdownload/v201809", [Content = body, Headers = headers, ManualStatusHandling = {404, 400}]),#duration(0,0,0,1)),
+web = Function.InvokeAfter(()=>Web.Contents("https://adwords.google.com/api/adwords/reportdownload/v201809", [Content = body, Headers = headers, ManualStatusHandling = {404, 400}]),#duration(0,0,0,0.7)),
 
 result =  if (try Xml.Tables(web,null,1251)[Name]?{0}? otherwise "") = "ApiError" then (try Xml.Tables(web,null,1251) otherwise "Unknown error") else
 let
@@ -135,10 +135,14 @@ let
     skip1 = Table.Skip(doc,1),
     skip2 = Table.RemoveLastN(skip1,1),
     promote = Table.PromoteHeaders(skip2, [PromoteAllScalars=true]) ,
-    cost =try Table.TransformColumns(Table.TransformColumnTypes(promote,{{"Cost", type number}}), {{"Cost", each _ / 1000000, type number}}) otherwise promote
-
-    in cost
-     in  result;
+    cost =try Table.TransformColumns(Table.TransformColumnTypes(promote,{{"Cost", type number}}), {{"Cost", each _ / 1000000, type number}}) otherwise promote,
+    renDate =try Table.RenameColumns(cost,{{"Day", "Date"}}) otherwise cost,
+    typeConv =try  Table.TransformColumnTypes(renDate, {{"Conversions", type number}}, "en-AU") otherwise renDate,
+    dateType =try  Table.TransformColumnTypes(typeConv,{{"Date", type date}}) otherwise typeConv,
+    clicksType =try Table.TransformColumnTypes(dateType,{ {"Clicks", Int64.Type}}) otherwise dateType,
+    impType =try Table.TransformColumnTypes(clicksType,{ {"Impressions", Int64.Type}}) otherwise clicksType
+    in impType
+in  result;
 
 
 dateFunc= (dat)=>
