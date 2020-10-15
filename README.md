@@ -12,5 +12,5 @@
 ### Полезные ссылки:
 Подробное видео по использованию коннектора: https://youtu.be/Ee2YBYfXoHs
 
-Типы отчётов: https://developers.google.com/adwords/api/docs/appendix/reports/all-reports
+Типы отчётов, параметры и показатели: https://developers.google.com/adwords/api/docs/appendix/reports/all-reports
 
