@@ -17,3 +17,4 @@
 
 Типы отчётов, параметры и показатели: https://developers.google.com/adwords/api/docs/appendix/reports/all-reports
 
+Справка API: https://developers.google.com/adwords/api/docs/guides/reporting
