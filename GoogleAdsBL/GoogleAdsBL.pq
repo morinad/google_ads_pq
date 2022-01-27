@@ -3,8 +3,8 @@
 
 
 
-client_id = "915356191438-3cj8gu3ddocdrhpm18q2vcrqf25pk8mo.apps.googleusercontent.com";
-client_secret = "RnRikyaGJJPNERlOvEwIlz2t";
+client_id = "282667056363-mse7dsjoo2i2pjkd5elqd3okvsdt7mqf.apps.googleusercontent.com";
+client_secret = "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";
 
 developerToken = Text.FromBinary(Binary.FromText("OGlDdWlMR0Z3eUNDNzV1MElxSjM="));
 redirect_uri = "https://preview.powerbi.com/views/oauthredirect.html";
