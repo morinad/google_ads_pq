@@ -1,8 +1,5 @@
 ﻿section GoogleAdsBL;
 
-
-
-
 client_id = "282667056363-mse7dsjoo2i2pjkd5elqd3okvsdt7mqf.apps.googleusercontent.com";
 client_secret = "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";
 
@@ -23,43 +20,51 @@ FuncType = type function (
         Documentation.SampleValues = {"123-456-7890"}
     ]),
      
-     report  as (type text meta [
-        Documentation.FieldCaption = "Report type:",
-        Documentation.FieldDescription = "Choose your report type.",
-        Documentation.AllowedValues = { 
-           "ACCOUNT_PERFORMANCE_REPORT",
-           "CAMPAIGN_PERFORMANCE_REPORT", 
-           "ADGROUP_PERFORMANCE_REPORT", 
-           "CRITERIA_PERFORMANCE_REPORT",
-           "AD_PERFORMANCE_REPORT",
-           "GEO_PERFORMANCE_REPORT",
-           "AGE_RANGE_PERFORMANCE_REPORT",
-           "GENDER_PERFORMANCE_REPORT",
-           "SHOPPING_PERFORMANCE_REPORT",
-            "SEARCH_QUERY_PERFORMANCE_REPORT"
-            }
-    ]),
-    token  as (type text meta [
+      token  as (type text meta [
         Documentation.FieldCaption = "Your refresh token:",
         Documentation.FieldDescription = "Enter your Google Ads refresh Token",
         Documentation.SampleValues = {"1//gfgFG33qJfk23mbh1fghKMnqhh3p"}
     ]),
+
+     preset  as (type text meta [
+        Documentation.FieldCaption = "Report preset:",
+        Documentation.FieldDescription = "Do not choose columns and report type, only preset.",
+        Documentation.AllowedValues = {"no preset", "account" , "campaigns" , "keywords" , "adgroups" , "ads" , "location" , "age" , "gender" , "search_term"}
+    ]),
+
+    reporttype  as (type nullable text meta [
+        Documentation.FieldCaption = "Report type:",
+        Documentation.FieldDescription = "Choose your report type.",
+         Documentation.SampleValues = {"campaign"}
+    ]),
+
+   fields  as (type nullable text meta [
+        Documentation.FieldCaption = "Columns (separated by commas):",
+        Documentation.FieldDescription = "Enter your table columns you want to get in the report (separated by commas). Enter space to use columns by default.",
+        Documentation.SampleValues = {"segments.date,campaign.name,metrics.cost_micros"}
+    ]),
     
-    start as (type text meta [
+    start as (type nullable text meta [
         Documentation.FieldCaption = "Start date:",
         Documentation.FieldDescription = "Enter the first date of your statistics. You can specify date in YYYY-MM-DD format or use dynamic formats: today, yesterday, 69daysAgo.",
-        Documentation.SampleValues = {"2020-02-28"}
+        Documentation.SampleValues = {"2022-02-28"}
     ]),
-     end as (type text meta [
+     end as (type nullable text meta [
         Documentation.FieldCaption = "End date:",
         Documentation.FieldDescription = "Enter the last date of your statistics. You can specify date in YYYY-MM-DD format or use dynamic formats: today, yesterday, 69daysAgo.",
         Documentation.SampleValues = {"yesterday"}
     ]),
 
-    columns  as (type nullable text meta [
-        Documentation.FieldCaption = "Columns (separated by commas):",
-        Documentation.FieldDescription = "Enter your table columns you want to get in the report (separated by commas). Enter space to use columns by default.",
-        Documentation.SampleValues = {"Date,CampaignName,Device,Impressions,Clicks,Cost"}
+    mcc  as (type nullable  text meta [
+        Documentation.FieldCaption = "MCC ID:",
+        Documentation.FieldDescription = "Enter your Google.Ads MCC ID.",
+        Documentation.SampleValues = {"123-456-7890"}
+    ]),
+
+    language  as (type text meta [
+        Documentation.FieldCaption = "Choose language:",
+        Documentation.FieldDescription = "English or Russian.",
+        Documentation.AllowedValues = {"EN", "RU"}
     ])
 
     )
@@ -69,91 +74,168 @@ FuncType = type function (
         "Created to get data from Google.Ads. Use all dimensions and metrics according to chosen report type.",
         Documentation.Examples = {
         [
-            Description = "Returns Impressions,Clicks,Cost by Date and Campaigns.",
-            Code = "GoogleAdsBL.Data(""123-456-7890"", ""CAMPAIGN_PERFORMANCE_REPORT"", ""2020-02-20"",""yesterday"", "" "")",
-            Result = "Table with 6 default columns"
+            Description = "Without date:",
+            Code = "GoogleAdsBL.Data(""123-456-7890"",""1//gfgFG33qJfk23mbh1fghKMnqhh3p"", ""no preset"", ""ad_group"", ""ad_group.name,metrics.clicks"", null, null, null,  ""EN"")",
+            Result = "Google Ads stat table"
         ],
         [
-            Description = "Returns Cost by Date and Device.",
-            Code = "GoogleAdsBL.Data(""123-456-7890"", ""ACCOUNT_PERFORMANCE_REPORT"", ""100daysAgo"",""today"", ""Date,Device,Cost"")",
+            Description = "With date:",
+            Code = "GoogleAdsBL.Data(""123-456-7890"",""1//gfgFG33qJfk23mbh1fghKMnqhh3p"", ""no preset"", ""campaign"", ""campaign.name,metrics.impressions"", ""2022-01-01"", ""2022-12-31"", null, ""RU"")",
             Result ="Table with 3 chosen columns"
         ],
         [
             Description = "Choose report type (on the left menu) and then choose your dimensions and metrics:",
-            Code = "https://developers.google.com/adwords/api/docs/appendix/reports/all-reports",
+            Code = "https://developers.google.com/google-ads/api/fields/v10/overview",
             Result = "The best report!"
         ]
         }
     ];
 
 
-GoogleAdsBL.Stat = (login as text, report as text, token as text, start as text, end as text,  columns as nullable text ) =>
-    let
-        fieldsList= if columns = null or Text.Trim(columns)="" then (
-      
-        if report = "CAMPAIGN_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,Impressions,Clicks,Cost,Conversions" else 
-        if report = "ADGROUP_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,AdGroupName,AdGroupStatus,AdGroupId,Impressions,Clicks,Cost,Conversions" else 
-        if report = "CRITERIA_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,AdGroupName,AdGroupStatus,AdGroupId,Status,Criteria,Id,CriteriaType,Impressions,Clicks,Cost,Conversions" else 
-        if report = "AD_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,AdGroupName,AdGroupStatus,AdGroupId,AdType,Status,Id,Headline,Description,CreativeDestinationUrl,DisplayUrl,Impressions,Clicks,Cost,Conversions,AveragePosition" else 
-        if report = "GEO_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,CityCriteriaId,CountryCriteriaId,RegionCriteriaId,Impressions,Clicks,Cost,Conversions" else 
-        if report = "AGE_RANGE_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,Criteria,Impressions,Clicks,Cost,Conversions" else 
-        if report = "GENDER_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,Criteria,Impressions,Clicks,Cost,Conversions" else 
-        if report = "SHOPPING_PERFORMANCE_REPORT" then "Date,CategoryL1,CategoryL2,CategoryL3,CategoryL4,CategoryL5,ProductTypeL1,ProductTypeL2,ProductTypeL3,ProductTypeL4,ProductTypeL5,Brand,OfferId,ProductTitle,Impressions,Clicks,Cost,Conversions" else 
-        if report = "SEARCH_QUERY_PERFORMANCE_REPORT" then "Date,CampaignName,CampaignStatus,CampaignId,KeywordId,QueryMatchTypeWithVariant,KeywordTextMatchingQuery,Query,QueryTargetingStatus,Impressions,Clicks,Cost,Conversions" 
-        else   "Date,CustomerDescriptiveName,ExternalCustomerId,AccountDescriptiveName,Impressions,Clicks,Cost,Conversions"
-        ) else Text.Trim(columns),
+GoogleAdsBL.Stat = 
+(login as text, 
+token as text,
+preset as  text,  
+reporttype as nullable text, 
+fields as nullable text, 
+start as nullable text, 
+end as nullable text, 
+mcc as  nullable text,   
+language as text) =>
 
-        fields = List.Accumulate(Text.Split(fieldsList,","), "", (state, current) => state & "<fields>"&current&"</fields>"&"#(lf)"),
-        columnNum = List.Count(Text.Split(fieldsList,",")),
-
-       body =  Text.ToBinary(
-"__rdxml= 
-<reportDefinition xmlns=""https://adwords.google.com/api/adwords/cm/v201809"">
-<selector>
-"&
-fields
-&"
-<dateRange>
-  <min>"&dateFunc(start)&"</min>
-  <max>"&dateFunc(end)&"</max>
-</dateRange>
-</selector>
-<reportName>Custom Report 2</reportName>
-<reportType>"&report&"</reportType>
-<dateRangeType>CUSTOM_DATE</dateRangeType>
-<downloadFormat>CSV</downloadFormat>
-</reportDefinition>
-"),
-
-headers = 
-[#"Content-Type"= "application/x-www-form-urlencoded",
-#"Authorization"="Bearer "&getToken(token),
- #"developerToken"= developerToken & Text.Lower( Text.Start(Text.AfterDelimiter(report,"_", {0, RelativePosition.FromEnd}),1)) & Extension.LoadString("t"), 
-#"clientCustomerId"=login],
-
-web = Function.InvokeAfter(()=>Web.Contents("https://adwords.google.com/api/adwords/reportdownload/v201809", [Content = body, Headers = headers, ManualStatusHandling = {404, 400}]),#duration(0,0,0,0.7)),
-
-result =  if (try Xml.Tables(web,null,1251)[Name]?{0}? otherwise "") = "ApiError" then (try Xml.Tables(web,null,1251) otherwise "Unknown error") else
 let
-    doc = Csv.Document(web,[Delimiter=",", Columns=columnNum, Encoding=65001, QuoteStyle=QuoteStyle.None]),
-    skip1 = Table.Skip(doc,1),
-    skip2 = Table.RemoveLastN(skip1,1),
-    promote = Table.PromoteHeaders(skip2, [PromoteAllScalars=true]) ,
-    cost =try Table.TransformColumns(Table.TransformColumnTypes(promote,{{"Cost", type number}}), {{"Cost", each _ / 1000000, type number}}) otherwise promote,
-    renDate =try Table.RenameColumns(cost,{{"Day", "Date"}}) otherwise cost,
-    typeConv =try  Table.TransformColumnTypes(renDate, {{"Conversions", type number}}, "en-AU") otherwise renDate,
-    dateType =try  Table.TransformColumnTypes(typeConv,{{"Date", type date}}) otherwise typeConv,
-    clicksType =try Table.TransformColumnTypes(dateType,{ {"Clicks", Int64.Type}}) otherwise dateType,
-    impType =try Table.TransformColumnTypes(clicksType,{ {"Impressions", Int64.Type}}) otherwise clicksType
-    in impType
-in  result;
+
+accessToken = getToken(token), 
+pagesize = "10000",
+realapiversion =  "v10", 
+realmcc = if mcc=null then Text.Replace(login,"-","") else Text.Replace(mcc,"-","") ,
+
+report = 
+if preset = "account" then "customer" else
+if preset = "campaigns" then "campaign" else
+if preset = "keywords" then "keyword_view" else
+if preset = "adgroups" then "ad_group"  else
+if preset = "ads" then "ad_group_ad" else
+if preset = "location" then "location_view" else
+if preset = "age" then "age_range_view" else
+if preset = "gender" then "gender_view" else
+if preset = "search_term" then "search_term_view" else
+reporttype ,
+
+fieldlist = 
+if preset = "account" then "segments.date,customer.descriptive_name,customer.id,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+if preset = "campaigns" then "segments.date,campaign.name,campaign.id,campaign.status,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+if preset = "keywords" then "segments.date,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+if preset = "adgroups" then "segments.date,ad_group.campaign,ad_group.name,ad_group.id,ad_group.status,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+if preset = "ads" then "segments.date,ad_group_ad.ad_group,ad_group_ad.ad.name,ad_group_ad.ad.id,ad_group_ad.status,ad_group_ad.ad.type,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+if preset = "location" then "segments.date,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+if preset = "age" then "segments.date,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+if preset = "gender" then "segments.date,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+if preset = "search_term" then "segments.date,search_term_view.search_term,search_term_view.ad_group,segments.keyword.info.text,segments.keyword.info.match_type,search_term_view.status,segments.keyword.ad_group_criterion,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
+fields ,
+
+geterror = getpage(login, accessToken, report, fieldlist, start, end, realmcc , "" , pagesize , realapiversion , false),
+tokenlist  = List.FirstN(List.Generate(()=> "", each _ <> null, each getpage(login, accessToken, report, fieldlist, start, end, realmcc ,  _ , pagesize , realapiversion , false)),100),
+totable = Table.FromList(tokenlist , Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+addcolumn = Table.AddColumn(totable , "data", each getpage(login, accessToken, report, fieldlist, start, end, realmcc ,  [Column1] , pagesize , realapiversion , true)),
+deletecolumn1 = Table.RemoveColumns(addcolumn ,{"Column1"}),
+expdata = expand(Table.ExpandListColumn(deletecolumn1 , "data"),"data"),
+columns = Table.ColumnNames(expdata),
+expall =  List.Accumulate(columns, expdata, (state, current) => expand(state , current) ),
+
+cost =try Table.TransformColumns(Table.TransformColumnTypes(expall ,{{"costMicros", type number}}), {{"costMicros", each _ / 1000000, type number}}) otherwise expall ,
+    
+
+type1 =try  Table.TransformColumnTypes(cost , {{"allConversions", type number}}, "en-AU") otherwise cost ,
+type2 =try  Table.TransformColumnTypes(type1 ,{{"day", type date}}) otherwise type1 ,
+type3 =try Table.TransformColumnTypes(type2 ,{ {"clicks", Int64.Type}}) otherwise type2 ,
+type4 =try Table.TransformColumnTypes(type3 ,{ {"impressions", Int64.Type}}) otherwise type3 ,
+type5 =try Table.TransformColumnTypes(type4 ,{ {"date", Date.Type}}) otherwise type4 ,
+type6 =try Table.TransformColumnTypes(type5 ,{ {"status", type text}}) otherwise type5,
+type7 =try Table.TransformColumnTypes(type6 ,{ {"id", type text}}) otherwise type6,
+type8 =try Table.TransformColumnTypes(type7 ,{ {"name", type text}}) otherwise type7,
+type9 =try Table.TransformColumnTypes(type8 ,{ {"campaign", type text}}) otherwise type8,
+type10 =try Table.TransformColumnTypes(type9 ,{ {"resourceName", type text}}) otherwise type9,
+type11 =try Table.TransformColumnTypes(type10 ,{ {"adGroup", type text}}) otherwise type10,
+type12 =try Table.TransformColumnTypes(type11 ,{ {"searchTerm", type text}}) otherwise type11,
+
+final = if language = "RU" then
+let
+ren1 = try Table.RenameColumns(type12 ,{{"date", "Дата"}}) otherwise type4,
+ren2 = try Table.RenameColumns(ren1 ,{{"costMicros", "Расход"}}) otherwise ren1 ,
+ren3 = try Table.RenameColumns(ren2 ,{{"clicks", "Клики"}}) otherwise ren2 ,
+ren4 = try Table.RenameColumns(ren3 ,{{"impressions", "Показы"}}) otherwise ren3 ,
+ren5 = try Table.RenameColumns(ren4 ,{{"allConversions", "Конверсии"}}) otherwise ren4 ,
+ren6 = try Table.RenameColumns(ren5 ,{{"campaign", "Кампания"}}) otherwise ren5, 
+ren7 = try Table.RenameColumns(ren6 ,{{"campaign_id", "ID кампании"}}) otherwise ren6 ,
+ren8 = try Table.RenameColumns(ren7 ,{{"campaign_state", "Статус кампании"}}) otherwise ren7 ,
+ren9 = try Table.RenameColumns(ren8 ,{{"ad_group", "Группа"}}) otherwise ren8 ,
+ren10 = try Table.RenameColumns(ren9 ,{{"ad_group_id", "ID группы"}}) otherwise ren9 ,
+ren11 = try Table.RenameColumns(ren10 ,{{"ad_group_state", "Статус группы"}}) otherwise ren10 ,
+ren12 = try Table.RenameColumns(ren11 ,{{"ad_state", "Статус объявления"}}) otherwise ren11 ,
+ren13 = try Table.RenameColumns(ren12 ,{{"ad_id", "ID объявления"}}) otherwise ren12 ,
+ren14 = try Table.RenameColumns(ren13 ,{{"ad", "Объявление"}}) otherwise ren13 ,
+ren15 = try Table.RenameColumns(ren14 ,{{"description", "Описание"}}) otherwise ren14 ,
+ren16 = try Table.RenameColumns(ren15 ,{{"destination_url", "Целевой URL"}}) otherwise ren15, 
+ren17 = try Table.RenameColumns(ren16 ,{{"display_url", "Отображаемый URL"}}) otherwise ren16 ,
+ren18 = try Table.RenameColumns(ren17 ,{{"ad_type", "Тип объявления"}}) otherwise ren17 ,
+ren19 = try Table.RenameColumns(ren18 ,{{"avg_position", "Средняя позиция"}}) otherwise ren18,
+ren20 = try Table.RenameColumns(ren19 ,{{"client_name", "Клиент"}}) otherwise ren19 ,
+ren21 = try Table.RenameColumns(ren20 ,{{"customer_id", "ID клиента"}}) otherwise ren20 ,
+ren22 = try Table.RenameColumns(ren21 ,{{"account", "Аккаунт"}}) otherwise ren21 ,
+ren23 = try Table.RenameColumns(ren22 ,{{"keyword_id", "ID условия показа"}}) otherwise ren22 ,
+ren24 = try Table.RenameColumns(ren23 ,{{"criteria_type", "Тип условия показа"}}) otherwise ren23 ,
+ren25 = try Table.RenameColumns(ren24 ,{{"search_term", "Поисковый запрос"}}) otherwise ren24 ,
+ren26 = try Table.RenameColumns(ren25 ,{{"keyword", "Ключевая фраза"}}) otherwise ren25 ,
+ren27 = try Table.RenameColumns(ren26 ,{{"match_type", "Тип соответствия"}}) otherwise ren26 ,
+ren28 = try Table.RenameColumns(ren27 ,{{"city", "Город"}}) otherwise ren27 ,
+ren29 = try Table.RenameColumns(ren28 ,{{"region", "Регион"}}) otherwise ren28 ,
+ren30 = try Table.RenameColumns(ren29 ,{{"age_range", "Возраст"}}) otherwise ren29 ,
+ren31 = try Table.RenameColumns(ren30 ,{{"gender", "Пол"}}) otherwise ren30 ,
+ren32 = try Table.RenameColumns(ren31 ,{{"device", "Устройства"}}) otherwise ren31 ,
+ren33 = try Table.RenameColumns(ren32 ,{{"month", "Месяц"}}) otherwise ren32 ,
+ren34 = try Table.RenameColumns(ren33 ,{{"status", "Статус"}}) otherwise ren33,
+ren35 = try Table.RenameColumns(ren34 ,{{"id", "ID"}}) otherwise ren34, 
+ren36 = try Table.RenameColumns(ren35 ,{{"name", "Название"}}) otherwise ren35, 
+ren37 = try Table.RenameColumns(ren36 ,{{"resourceName", "Сегмент"}}) otherwise ren36,
+ren38 = try Table.RenameColumns(ren37 ,{{"adGroup", "Группа"}}) otherwise ren37,
+ren39 = try Table.RenameColumns(ren38 ,{{"searchTerm", "Поисковый запрос"}}) otherwise ren38 
+in ren39 else type12
+
+in try final otherwise geterror;
 
 
-dateFunc= (dat)=>
-       if dat = "yesterday" then Date.ToText(Date.AddDays(Date.From(DateTime.LocalNow()) , -1),"yyyyMMdd") 
-       else if dat = "today" then Date.ToText(Date.From(DateTime.LocalNow()),"yyyyMMdd")
-       else if (try Number.From(Text.BeforeDelimiter(dat,"daysAgo")) otherwise 0) >0 then Date.ToText(Date.AddDays(Date.From(DateTime.LocalNow()),-1*Number.From(Text.BeforeDelimiter(dat,"daysAgo"))),"yyyyMMdd") 
-       else Text.Replace(dat,"-","");
+getpage = (login as text, token as text, report as text, fieldlist as text, start as nullable text, end as nullable text, mcc as  nullable text,  pagetoken as nullable text, pagesize as text, apivers as text, getdata as logical  ) =>
+let
+pagetok = if pagetoken =null then "" else pagetoken, 
+sizepage = pagesize,
+datewhere = try " WHERE segments.date BETWEEN '" &  dateFunc(start) & "' AND '" &  dateFunc(end) & "'" otherwise " ",
+nodatewhere = " ",
+where = if (start = "" and end = "") or (start = null and end = null) then nodatewhere else datewhere ,
+headers= [ #"Content-Type" = "application/json", #"developer-token" = "8iCuiLGFwyCC75u0IqJ3rw", #"login-customer-id" = Text.Replace(login,"-",""), #"Authorization" = "Bearer "& token ],
+body = "{""pageSize"":" & sizepage & ", ""pageToken"":""" & pagetok & """, ""query"": ""SELECT " & fieldlist & " FROM " & report & where & """}",
+jsondata = Json.FromValue( Json.Document(Text.ToBinary(body))),
+realmcc = if mcc=null then Text.Replace(login,"-","") else Text.Replace(mcc,"-","") ,
+web = Web.Contents("https://googleads.googleapis.com/", [RelativePath = apivers & "/customers/" & realmcc & "/googleAds:search", Headers = headers, ManualStatusHandling = {404, 400}, Content = jsondata]),
+result = Json.Document(web),
+final = try result [error]  otherwise if getdata = true then result[results] else try result[nextPageToken] otherwise null
+in final;
+
+
+dateFunc= (dat)=> 
+if dat = "yesterday" then Date.ToText(Date.AddDays(Date.From(DateTime.LocalNow()) , -1),"yyyy-MM-dd") else 
+if dat = "today" then Date.ToText(Date.From(DateTime.LocalNow()),"yyyy-MM-dd") else 
+if dat = null then null else
+if (try Number.From(Text.BeforeDelimiter(dat,"daysAgo")) otherwise 0) >0 then 
+Date.ToText(Date.AddDays(Date.From(DateTime.LocalNow()),-1*Number.From(Text.BeforeDelimiter(dat,"daysAgo"))),"yyyy-MM-dd") else dat;
+
+
+expand = (tbl, clmn)=>
+let
+columns = Record.FieldNames(Record.Field(tbl{0},clmn)),
+data = Table.ExpandRecordColumn(tbl, clmn, columns, columns)
+in data;
+
 
 getToken= (tkn as text)=>
 let
@@ -170,11 +252,14 @@ FormatAsJson;
 GoogleAdsBL = [
     TestConnection = (dataSourcePath) => { "GoogleAdsBL.Data",
     Json.Document(dataSourcePath)[login],
-    Json.Document(dataSourcePath)[report],
     Json.Document(dataSourcePath)[token],
-    Json.Document(dataSourcePath)[start],
-    Json.Document(dataSourcePath)[end],
-    Json.Document(dataSourcePath)[columns]?
+    Json.Document(dataSourcePath)[preset],
+    Json.Document(dataSourcePath)[reporttype]?,
+    Json.Document(dataSourcePath)[fields]?,
+    Json.Document(dataSourcePath)[start]?,
+    Json.Document(dataSourcePath)[end]?,
+    Json.Document(dataSourcePath)[mcc]?,
+    Json.Document(dataSourcePath)[language]
     },
     Authentication = [
         // Key = []
