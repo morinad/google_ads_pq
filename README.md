@@ -18,6 +18,6 @@
 ### Полезные ссылки:
 Подробное видео по использованию коннектора: https://youtu.be/Ee2YBYfXoHs
 
-Типы отчётов, параметры и показатели: https://developers.google.com/adwords/api/docs/appendix/reports/all-reports
+Типы отчётов, параметры и показатели: https://developers.google.com/google-ads/api/fields/v10/overview
 
-Справка API: https://developers.google.com/adwords/api/docs/guides/reporting
+Справка API: https://developers.google.com/google-ads/api/rest/examples
