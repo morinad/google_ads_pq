@@ -55,9 +55,9 @@ FuncType = type function (
         Documentation.SampleValues = {"yesterday"}
     ]),
 
-    mcc  as (type nullable  text meta [
-        Documentation.FieldCaption = "MCC ID:",
-        Documentation.FieldDescription = "Enter your Google.Ads MCC ID.",
+    client  as (type nullable  text meta [
+        Documentation.FieldCaption = "Customer ID:",
+        Documentation.FieldDescription = "Enter your Google.Ads customer ID.",
         Documentation.SampleValues = {"123-456-7890"}
     ]),
 
@@ -100,7 +100,7 @@ reporttype as nullable text,
 fields as nullable text, 
 start as nullable text, 
 end as nullable text, 
-mcc as  nullable text,   
+client as  nullable text,   
 language as text) =>
 
 let
@@ -108,7 +108,7 @@ let
 accessToken = getToken(token), 
 pagesize = "10000",
 realapiversion =  "v10", 
-realmcc = if mcc=null then Text.Replace(login,"-","") else Text.Replace(mcc,"-","") ,
+realclient = if client=null then Text.Replace(login,"-","") else Text.Replace(client,"-","") ,
 
 report = 
 if preset = "account" then "customer" else
@@ -134,10 +134,10 @@ if preset = "gender" then "segments.date,metrics.impressions,metrics.clicks,metr
 if preset = "search_term" then "segments.date,search_term_view.search_term,search_term_view.ad_group,segments.keyword.info.text,segments.keyword.info.match_type,search_term_view.status,segments.keyword.ad_group_criterion,metrics.impressions,metrics.clicks,metrics.cost_micros,metrics.all_conversions" else
 fields ,
 
-geterror = getpage(login, accessToken, report, fieldlist, start, end, realmcc , "" , pagesize , realapiversion , false),
-tokenlist  = List.FirstN(List.Generate(()=> "", each _ <> null, each getpage(login, accessToken, report, fieldlist, start, end, realmcc ,  _ , pagesize , realapiversion , false)),100),
+geterror = getpage(login, accessToken, report, fieldlist, start, end, realclient , "" , pagesize , realapiversion , false),
+tokenlist  = List.FirstN(List.Generate(()=> "", each _ <> null, each getpage(login, accessToken, report, fieldlist, start, end, realclient ,  _ , pagesize , realapiversion , false)),100),
 totable = Table.FromList(tokenlist , Splitter.SplitByNothing(), null, null, ExtraValues.Error),
-addcolumn = Table.AddColumn(totable , "data", each getpage(login, accessToken, report, fieldlist, start, end, realmcc ,  [Column1] , pagesize , realapiversion , true)),
+addcolumn = Table.AddColumn(totable , "data", each getpage(login, accessToken, report, fieldlist, start, end, realclient ,  [Column1] , pagesize , realapiversion , true)),
 deletecolumn1 = Table.RemoveColumns(addcolumn ,{"Column1"}),
 expdata = expand(Table.ExpandListColumn(deletecolumn1 , "data"),"data"),
 columns = Table.ColumnNames(expdata),
@@ -205,7 +205,7 @@ in ren39 else type12
 in try final otherwise geterror;
 
 
-getpage = (login as text, token as text, report as text, fieldlist as text, start as nullable text, end as nullable text, mcc as  nullable text,  pagetoken as nullable text, pagesize as text, apivers as text, getdata as logical  ) =>
+getpage = (login as text, token as text, report as text, fieldlist as text, start as nullable text, end as nullable text, client as  nullable text,  pagetoken as nullable text, pagesize as text, apivers as text, getdata as logical  ) =>
 let
 pagetok = if pagetoken =null then "" else pagetoken, 
 sizepage = pagesize,
@@ -215,8 +215,8 @@ where = if (start = "" and end = "") or (start = null and end = null) then nodat
 headers= [ #"Content-Type" = "application/json", #"developer-token" = "8iCuiLGFwyCC75u0IqJ3rw", #"login-customer-id" = Text.Replace(login,"-",""), #"Authorization" = "Bearer "& token ],
 body = "{""pageSize"":" & sizepage & ", ""pageToken"":""" & pagetok & """, ""query"": ""SELECT " & fieldlist & " FROM " & report & where & """}",
 jsondata = Json.FromValue( Json.Document(Text.ToBinary(body))),
-realmcc = if mcc=null then Text.Replace(login,"-","") else Text.Replace(mcc,"-","") ,
-web = Web.Contents("https://googleads.googleapis.com/", [RelativePath = apivers & "/customers/" & realmcc & "/googleAds:search", Headers = headers, ManualStatusHandling = {404, 400}, Content = jsondata]),
+realclient = if client=null then Text.Replace(login,"-","") else Text.Replace(client,"-","") ,
+web = Web.Contents("https://googleads.googleapis.com/", [RelativePath = apivers & "/customers/" & realclient & "/googleAds:search", Headers = headers, ManualStatusHandling = {404, 400}, Content = jsondata]),
 result = Json.Document(web),
 final = try result [error]  otherwise if getdata = true then result[results] else try result[nextPageToken] otherwise null
 in final;
@@ -258,7 +258,7 @@ GoogleAdsBL = [
     Json.Document(dataSourcePath)[fields]?,
     Json.Document(dataSourcePath)[start]?,
     Json.Document(dataSourcePath)[end]?,
-    Json.Document(dataSourcePath)[mcc]?,
+    Json.Document(dataSourcePath)[client]?,
     Json.Document(dataSourcePath)[language]
     },
     Authentication = [
