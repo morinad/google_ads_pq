@@ -1,8 +1,10 @@
 # Кастомный коннектор к Google Ads для Power BI
 
 ### Все коннекторы и поддержка:
-Все коннекторы mez для Power BI и консультации по ним 
-доступны на Boosty по подписке "ПРО": https://boosty.to/morinad
+В рамках подписки "ПРО" на Boosty https://boosty.to/morinad вы получите:
+1) Все коннекторы mez для Power BI
+2) Поддержка и ответы на вопросы
+
 
 ### Курсы для начинающих:
 1) Основы Power BI: https://directprorf.ru/basics?utm_source=github
