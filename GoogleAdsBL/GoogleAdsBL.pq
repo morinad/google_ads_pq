@@ -85,7 +85,7 @@ FuncType = type function (
         ],
         [
             Description = "Choose report type (on the left menu) and then choose your dimensions and metrics:",
-            Code = "https://developers.google.com/google-ads/api/fields/v12/overview",
+            Code = "https://developers.google.com/google-ads/api/fields/v14/overview",
             Result = "The best report!"
         ]
         }
@@ -107,7 +107,7 @@ let
 
 accessToken = getToken(token), 
 pagesize = "10000",
-realapiversion =  "v12", 
+realapiversion =  "v14", 
 realclient = if client=null then Text.Replace(login,"-","") else Text.Replace(client,"-","") ,
 
 report = 
