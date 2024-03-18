@@ -1,3 +1,5 @@
+### Новые видео, статьи и полезности в Telegram: https://t.me/+2kqVrjV5aXs0NTRi 
+
 # Кастомный коннектор к Google Ads для Power BI
 
 ### Курсы для начинающих:
