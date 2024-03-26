@@ -1,7 +1,7 @@
 ﻿section GoogleAdsBL;
 
-client_id = "282667056363-mse7dsjoo2i2pjkd5elqd3okvsdt7mqf.apps.googleusercontent.com";
-client_secret = "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";
+client_id = "13860562608-rolk2hhj4tecggm0k1odjrfo5m905hce.apps.googleusercontent.com";
+client_secret = "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";
 
 developerToken = Text.FromBinary(Binary.FromText("OGlDdWlMR0Z3eUNDNzV1MElxSjM="));
 redirect_uri = "https://preview.powerbi.com/views/oauthredirect.html";
