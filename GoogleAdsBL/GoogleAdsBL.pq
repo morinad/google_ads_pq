@@ -85,7 +85,7 @@ FuncType = type function (
         ],
         [
             Description = "Choose report type (on the left menu) and then choose your dimensions and metrics:",
-            Code = "https://developers.google.com/google-ads/api/fields/v15/overview",
+            Code = "https://developers.google.com/google-ads/api/fields/v17/overview",
             Result = "The best report!"
         ]
         }
@@ -107,7 +107,7 @@ let
 
 accessToken = getToken(token), 
 pagesize = "10000",
-realapiversion =  "v15", 
+realapiversion =  "v17", 
 realclient = if client=null then Text.Replace(login,"-","") else Text.Replace(client,"-","") ,
 
 report = 
@@ -213,7 +213,7 @@ datewhere = try " WHERE segments.date BETWEEN '" &  dateFunc(start) & "' AND '" 
 nodatewhere = " ",
 where = if (start = "" and end = "") or (start = null and end = null) then nodatewhere else datewhere ,
 headers= [ #"Content-Type" = "application/json", #"developer-token" = "8iCuiLGFwyCC75u0IqJ3rw", #"login-customer-id" = Text.Replace(login,"-",""), #"Authorization" = "Bearer "& token ],
-body = "{""pageSize"":" & sizepage & ", ""pageToken"":""" & pagetok & """, ""query"": ""SELECT " & fieldlist & " FROM " & report & where & """}",
+body = "{""pageToken"":""" & pagetok & """, ""query"": ""SELECT " & fieldlist & " FROM " & report & where & """}",
 jsondata = Json.FromValue( Json.Document(Text.ToBinary(body))),
 realclient = if client=null then Text.Replace(login,"-","") else Text.Replace(client,"-","") ,
 web = Web.Contents("https://googleads.googleapis.com/", [RelativePath = apivers & "/customers/" & realclient & "/googleAds:search", Headers = headers, ManualStatusHandling = {404, 400}, Content = jsondata]),
