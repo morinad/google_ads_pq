@@ -2,15 +2,7 @@
 
 ### Новые видео, статьи и полезности в Telegram-канале: https://t.me/+2kqVrjV5aXs0NTRi
 
-### Курсы для начинающих:
-1) Основы Power BI: https://directprorf.ru/basics?utm_source=github
-2) Из API -> в Excel и Power BI + коннекторы-функции: https://directprorf.ru/excel?utm_source=github
-
-### Продвинутые курсы:
-3) Продвинутый Power Query: https://directprorf.ru/pro?utm_source=github
-4) Создание коннекторов в Power Query: https://directprorf.ru/connectors?utm_source=github
-
-По всем вопросам, связанным с курсами и коннекторами: https://t.me/alexdirect или 8-916-978-77-46.
+### Все наши курсы и коннекторы на платформе: https://directprobi.ru/platform?utm_source=github
 
 ### Как воспользоваться коннектором:
 
